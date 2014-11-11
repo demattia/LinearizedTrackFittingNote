@@ -1,0 +1,151 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{cite}
+\usepackage{url}
+
+\newcommand{\bfx}{\mathbf{x}}
+
+\begin{document}
+\author{Marco De Mattia}
+\title{Linearized Track Fitting}
+\maketitle
+
+\section{Introduction}
+
+The task of fitting tracks from a multitude of hits in the CMS silicon tracker is achieved offline by the CMS tracking software. The software uses a Kalman Filter approach to refine the information from hits in successive layers. Even in the offline environment, where time is in principle not a constraint, it is not feasible to explore all possible hit combinations. Seeds are instead built using layers that give 3D information (pixels, or double sided strip layers) to guide the search for hits in a narrower window. Even with this approach it is not feasible to perform track fitting within the 12.5 $\mu$s latency that will be available in the L1 trigger of CMS for the HL-LHC. New solutions must be found to reduce combinatorics and speed up the track fitting. One possible approach is to utilize associative memories (AM) to quickly group together subsets of the hits in roads that are potentially consistent with tracks. The coarsness of this step leads to multiple fake roads and an additional step is needed to refine the information, remove fakes, and estimate track parameters.
+
+In this document we explore a method of fitting tracks out of a set of hits that is simple enough to be fast and implementable in FPGAs. This approach is based on a linear approximation of the dependence of the track parameters on the hit coordinates. The linear approximation will be acceptable only in a limited region of the phase space, i.e. an expansion of the function around a specific point. This method was utilized in the SVT at CDF and a review can be found in~\cite{SVTReview} and~\cite{SVTReviewFermilab}.
+
+Other methods for track fitting at L1 trigger are being explored for CMS, such as Hough Transform and Retina Fit. They are not described in this document.
+
+\section{Linear Approximation}
+
+Each candidate track is represented as a list of $n$ hit coordinates, and can be thought of as a point $\mathbf{x}$ within a set $\mathcal{C} \subset R^n$. This subset is limited by the physical boundaries on the hit coordinates. Of all the points in $\mathcal{C}$ only a subset $\mathcal{T} \subset \mathcal{C}$ can be reasonably consistent with tracks coordinates. The concrete subset $\mathcal{T}$ is defined by specific criteria, such as a $\chi^2$ cut. Track finding is the process of deciding whether a set of coordinates corresponds to a track in $\mathcal{T}$.
+
+Each track is fully defined by a set of $m < n$ parameters $\mathbf{p}$ (e.g. $p_T$, $\phi$, $\eta$, $d_0$, $z_0$). In the case of perfect detector resolution, the hit coordinates are uniquely determined by the parameters $\mathbf{p}$, and the set $\mathcal{T}$ reduces to an $m$-dimensional surface contained in $\mathcal{C}$, described by $n$ parametric equations,
+\begin{equation}
+\mathbf{x} = \mathbf{x}(p_1, \dots, p_m)\, .
+\label{eq:x(p)}
+\end{equation}
+By eliminating the parameters equation~\ref{eq:x(p)} can be rewritten as $n - m$ constraint equations,
+\begin{equation}
+f_i(\mathbf{x}) = 0;\ i = 1, \dots, n-m\, .
+\label{eq:constraints}
+\end{equation}
+A set of coordinates $\mathbf{x}$ corresponds to a track in $\mathcal{T}$ if and only if it satisfies the constraints equations.
+
+In the case of finite detector resolution each hit coordinate has an associated uncertainty. The constraint functions ${f_i}$ then become random variables that take values slightly different from zero. Geometrically, the surface $\mathcal{T}$ acquires some thickness. In this case, there is no general exact solution to the constraint equations.
+
+\subsection{Linearized Constraints}
+
+The starting system of equations is generally not diagonal. However, given that the ${f_i}$ are random variables we can write their covariance matrix
+\begin{equation}
+F_{ij} = E[\ (f_i(\bfx) - E[f_i(\bfx)])(f_j(\bfx) - E[f_j(\bfx)]\ ]\, ,
+\end{equation}
+where $E[\ ]$ denotes the expected value. By expanding the constraint functions to first order around a point $\mathbf{x_0}$, and defining $\Delta x_r = x_r - x_{r0}$,
+\begin{equation}
+f_i(\bfx) \simeq \frac{\partial f_i}{\partial \bfx}(\bfx_0)\cdot (\bfx - \bfx_0) = \sum\limits_{r=1}^n \frac{\partial f_i}{\partial x_r}(\bfx_0)\Delta x_r\, ,
+\end{equation}
+we can express, to first order, the covariance matrix of the constraint functions {$f$} as a function of the covariance matrix of the deltas of the coordinates:
+\begin{equation}
+\begin{aligned}
+F_{ij} &= E\left[\frac{\partial f_i}{\partial \bfx}(\bfx_0)\cdot (\bfx - \bfx_0) - E\left[\frac{\partial f_j}{\partial \bfx}(\bfx_0)\cdot (\bfx - \bfx_0) \right] \right] = \\
+       &= \sum\limits_{rs}\frac{\partial f_i}{\partial x_r}\frac{\partial f_j}{\partial x_s} \ E\left[(\Delta x_r - E[\Delta x_r])(\Delta x_s - E[\Delta x_s])\right] = \\
+       &= \sum\limits_{rs}\frac{\partial f_i}{\partial x_r}\frac{\partial f_j}{\partial x_s} \mbox{Cov}(\Delta x_r, \Delta x_s)
+\end{aligned}
+\end{equation}
+The matrix $F_{ij}$ is a covariance matrix, therefore it is symmetric and it can be diagonalized through a rotation in the space of the $f_i$s. The new coordinates $\tilde{f}_i$ can be scaled to unit variance so that the sum $\sum_i \tilde{f}^2_i$, with $\langle\tilde{f}^2_i\rangle = 1$, follows a $\chi^2$ distribution as long as the PDFs of the $\tilde{f}_i$s are gaussian. The linear expansion of the diagonalized base of $\tilde{f}_i$s can be written as
+\begin{equation}
+\tilde{f}_i \simeq \frac{\partial \tilde{f}_i}{\partial \bfx}\cdot(\bfx - \bfx_0) = \mathbf{v_i} \cdot \bfx + c_i \, .
+\label{eq:vis}
+\end{equation}
+Geometrically, this corresponds to approximating $\mathcal{T}$ with its tangent hyperplane in $\bfx_0$. The approximation will only work in a small region around $\bfx_0$, therefore, to apply this method over a large region and retain good accuracy the region must be split in smaller parts where the linearization is performed.
+
+In principle, one can derive the constraint functions analytically given the detector geometry, magnetic field, and material. In practice, however, these functions can be arbitrarily complicated and determining their derivatives from first principles might not be practical. A numerical method can be used to estimate the linearized constraints via the empirical covariance matrix. If we sample directly the phase space of $\mathcal{T}$ we can build this covariance matrix and study its principal components, some of which are the $\mathbf{v_i}$s of equation~\ref{eq:vis}. We can do this by taking a sample of tracks (either from MC or from data), which by construction are sets of hits that belong to $\mathcal{T}$, and by computing the covariance matrix of their hit coordinates
+\begin{equation}
+\mbox{M}_{ij} \simeq E[ (\Delta x_i - E[\Delta x_i])(\Delta x_j - E[\Delta x_j])]\, .
+\end{equation}
+Diagonalizing this matrix, i.e. finding the principal components, will allow to estimate the $\mathbf{v_i}$s. Note that the full correlation matrix of the coordinates contains more information than the constraints, since it has a higher dimensionality ($n$) than the constraints covariance matrix ($n - m$). In general, what one obtains are $n$ eigenvectors and $n$ corresponding eigenvalues. Of these eigenvalues $m$ will be bigger than the others as their associated variances correspond to the dependence of the track parameters on the hit coordinates. Geometrically, their associated eigenvectors form a base on the hyperplane tangent to the surface $\mathcal{T}$ in $\bfx_0$. The remaining $n - m$ eigenvalues are smaller and correspond to the linearized constraints. Geometrically, their associated eigenvectors correspond to the coordinates perpendicular to the tangent hyperplane associated to the thickness of the surface $\mathcal{T}$ due to the finite detector resolution (uncertainties on the hit coordinates). We can take the $n - m$ eigenvectors with smaller eigenvalues, scale them to unit variance, and identify them with the $\tilde{f}_i$s. The advantages of this procedure are in its simplicity and in the possibility to perform it directly on data samples, thereby automatically accounting for possible detector misalignements and avoiding uncertainties that might affect the simulation.
+
+With this method we can derive the coefficients $\mathbf{v_i}$ of the linearized constraints through which we can evaluate a $\chi^2$ for each set of hits.
+
+\subsection{Linearized Track Parameters}
+
+The method described in the previous subsection naturally yields a subset of $m$ eigenvectors that are associated to bigger eigenvalues and that can be related to the track parameters. However, these track parameters are not in a readily usable form (e.g. $p_T$, $\eta$, $\phi$, $d_0$ and $z_0$). We want to find the transformation from the principal components of the hit coordinates to the track parameters in a usable form. We can invert, at least locally, equation~\ref{eq:x(p)} to express the  parameters as a function of the hit coordinates
+\begin{equation}
+p_i = p_i(\bfx) \, .
+\end{equation}
+We consider a linear approximation of this equation in the form
+\begin{equation}
+p_i \simeq \mathbf{w_i}\cdot(\bfx - \bfx_0) + p_i(\bfx_0)
+\end{equation}
+or
+\begin{equation}
+\Delta p_i \simeq \mathbf{w_i} \cdot \mathbf{\Delta} \bfx = \sum\limits_{j=1}^n D_{ij} \Delta x_j
+\end{equation}
+where we defined $\Delta p_i = p_i - p_i(\bfx_0)$ and where $D_{ij}$ for $j\in [1,n]$ are the components of $\mathbf{w_i}$.
+The best coefficients $D_{ij}$ are those that minimize the variance. We can estimate them on a sample of tracks using the least squares method and minimizing the sum of the squares of the deviations
+\begin{equation}
+\chi^2 = \sum\limits_{ik}\left(\sum\limits_j D_{ij} \Delta x_j^{(k)} - \Delta p_i^{(k)} \right)^2 \, ,
+\label{eq:chi2}
+\end{equation}
+where the index $(k)$ denotes iteration on the tracks. Note that, unlike for the linearized constraints coefficients that could be derived also on data, this method can only be applied on MC because we need to know the true values of $\Delta p_i^{(k)}$
+
+Equation~\ref{eq:chi2} presents a global $\chi^2 = \sum_i \chi^2_i$ computed using the deviations for all track parameters. Each parameter is estimated through a separate linear equation and these equations are independent. Therefore, minimizing the $\chi^2$ in equation~\ref{eq:chi2} is equivalent to minimizing the $\chi^2_i$ independently for each track parameter, and we only write it as a single value for convenience. This is important because the uncertainties between different tracks ($k$) can be assumed to be the same ($\sigma_{(k)} = \sigma$ for all $k$) and in this case the least squares expression above is equivalent to a $\chi^2$ (if the errors are also gaussian) apart from a multiplicative factor $1/\sigma^2$ which does not affect the result of the minimization. Furthermore, the errors have expectation zero, are uncorrelated and have equal variances as they all have the same $\sigma$, therefore from the Gauss-Markov theorem~\cite{GaussMarkov}, we know that the ordinary least squares estimator is the best linear unbiased estimator of the coefficients. In this case best means giving the lowest variance of the estimate.
+
+To find the coefficients that minimize the $\chi^2$ let us consider the derivative
+% \begin{equation}
+% \begin{aligned}
+% \frac12\frac{\partial \chi^2}{\partial D_{rs}} &= \sum\limits_{ik}\left(\sum\limits_j D_{ij} \Delta x_j^{(k)} - \Delta p_i^{(k)}\right) \sum\limits_q\delta_{ir}\delta_{qs}\Delta x_q^{(k)} = \\
+% &= \sum\limits_{ik}\left(\sum\limits_j D_{ij} \Delta x_j^{(k)} - \Delta p_i^{(k)}\right) \delta_{ir}\Delta x_s^{(k)} = \\
+% &= \sum\limits_k\left(\sum\limits_j D_{rj} \Delta x_j^{(k)} - \Delta p_r^{(k)}\right) \Delta x_s^{(k)} \, .
+% \end{aligned}
+% \end{equation}
+\begin{equation}
+\begin{aligned}
+\frac12\frac{\partial \chi^2}{\partial D_{rs}} &= \sum\limits_{ik}\left(\sum\limits_j D_{ij} \Delta x_j^{(k)} - \Delta p_i^{(k)}\right) \sum\limits_q\delta_{ir}\delta_{qs}\Delta x_q^{(k)} = \\
+&= \sum\limits_k\left(\sum\limits_j D_{rj} \Delta x_j^{(k)} - \Delta p_r^{(k)}\right) \Delta x_s^{(k)} \, .
+\end{aligned}
+\end{equation}
+By solving the equation obtained by setting the derivative equal to zero we can find the best coefficients. We have
+\begin{equation}
+\sum\limits_j D_{rj} \sum\limits_k \Delta x_j^{(k)} \Delta x_s^{(k)} = \sum\limits_k \Delta p_r^{(k)} \Delta x_s^{(k)} \, .
+\label{eq:D}
+\end{equation}
+Given $N$ tracks, the second half of equation~\ref{eq:D} is $N-1$-times the element $C^{(p)}_{rs}$ in the empirical correlation matrix between track parameters and hit coordinates (where $x_0$ and $p_0$ are taken as the expected values, or the means) since
+\begin{equation}
+C^{(p)}_{rs} = \sum\limits_{k=1}^N \frac{\Delta p_r^{(k)} \Delta x_s^{(k)}}{N-1} \, ,
+\end{equation}
+and part of the left term is $N-1$-times the empirical covariance matrix of the hit coordinates $C^{(v)}_{js}$ since
+\begin{equation}
+C^{(v)}_{js} = \sum\limits_{k=1}^N \frac{\Delta x_j^{(k)} \Delta x_s^{(k)}}{N-1} \, .
+\end{equation}
+We can finally write
+\begin{equation}
+\sum\limits_j D_{rj} C^{(v)}_{js} = C^{(p)}_{rs} \, ,
+\end{equation}
+or in matrix form
+\begin{equation}
+D\cdot C^{(v)} = C^{(p)}
+\end{equation}
+
+We conclude that the matrix $D$ that performs the linear transformation from the hit coordinates to the track parameters and with coefficients that minimize the variances can be obtained from the covariance matrix of the hit coordinates and from the correlation matrix between track parameters and hit coordinates as
+\begin{equation}
+D = C^{(p)} \cdot C^{(v)-1} \, .
+\label{eg:Dfinal}
+\end{equation}
+This result is valid independently of the form of the correlation matrix $C^{(v)}$. However, if it is diagonal, i.e. if we are in the base of the principal components, then the inverse matrix $C^{(v)-1}$ is still diagonal with elements $1/\lambda_{ii}$ on the main diagonal, where $\lambda_{ii}$ are the eigenvalues of $C^{(v)}$. In this case equation~\ref{eg:Dfinal} simplifies to
+\begin{equation}
+D_{ij} = \sum\limits_r C^{(v)}_{ij}/\lambda_{jj}\, , \, \, \mbox{for } i,j \in [1,n] \, .
+\end{equation}
+
+
+
+\bibliography{LinearizedTrackFitting}{}
+\bibliographystyle{plain}
+
+\end{document}
+\end{document}

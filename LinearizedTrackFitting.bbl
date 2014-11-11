@@ -1,0 +1,23 @@
+\begin{thebibliography}{1}
+
+\bibitem{SVTReview}
+Ashmanskas~B et~al.
+\newblock The cdf silicon vertex trigger.
+\newblock {\em Nuclear Instruments and Methods in Physics Research Section A:
+  Accelerators, Spectrometers, Detectors and Associated Equipment},
+  518(1–2):532 -- 536, 2004.
+\newblock Frontier Detectors for Frontier Physics: Proceedings.
+
+\bibitem{GaussMarkov}
+Gauss and Markov.
+\newblock {Gauss-Markov Theorem}.
+\newblock \url{http://en.wikipedia.org/wiki/Gauss–Markov_theorem}.
+\newblock [Online; accessed Nov-10-2014].
+
+\bibitem{SVTReviewFermilab}
+Luciano Ristori and Giovanni Punzi.
+\newblock Triggering on heavy flavors at hadron colliders.
+\newblock {\em Annual Review of Nuclear and Particle Science}, 60(1):595--614,
+  2010.
+
+\end{thebibliography}
