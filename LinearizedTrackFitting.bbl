@@ -14,6 +14,13 @@ Gauss and Markov.
 \newblock \url{http://en.wikipedia.org/wiki/Gauss–Markov_theorem}.
 \newblock [Online; accessed Nov-10-2014].
 
+\bibitem{IterativeMeanAndCovariance}
+Philippe Pebay.
+\newblock Formulas for robust, one-pass parallel computation of covariances and
+  arbitrary-order statistical moments.
+\newblock Technical report, Sandia National Laboratories, 2008.
+\newblock SAND2008-6212.
+
 \bibitem{SVTReviewFermilab}
 Luciano Ristori and Giovanni Punzi.
 \newblock Triggering on heavy flavors at hadron colliders.

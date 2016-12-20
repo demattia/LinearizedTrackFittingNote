@@ -3,44 +3,44 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: LinearizedTrackFitting.aux
 The style file: plain.bst
 Database file #1: LinearizedTrackFitting.bib
-You've used 3 entries,
+You've used 4 entries,
             2118 wiz_defined-function locations,
-            520 strings with 4605 characters,
-and the built_in function-call counts, 908 in all, are:
-= -- 89
-> -- 33
+            527 strings with 4821 characters,
+and the built_in function-call counts, 1113 in all, are:
+= -- 112
+> -- 40
 < -- 0
-+ -- 14
-- -- 10
-* -- 59
-:= -- 157
-add.period$ -- 11
-call.type$ -- 3
-change.case$ -- 14
++ -- 17
+- -- 12
+* -- 66
+:= -- 199
+add.period$ -- 15
+call.type$ -- 4
+change.case$ -- 19
 chr.to.int$ -- 0
-cite$ -- 3
-duplicate$ -- 29
-empty$ -- 79
-format.name$ -- 10
-if$ -- 190
+cite$ -- 4
+duplicate$ -- 37
+empty$ -- 94
+format.name$ -- 12
+if$ -- 231
 int.to.chr$ -- 0
-int.to.str$ -- 3
+int.to.str$ -- 4
 missing$ -- 2
-newline$ -- 20
-num.names$ -- 6
-pop$ -- 15
+newline$ -- 26
+num.names$ -- 8
+pop$ -- 17
 preamble$ -- 1
-purify$ -- 11
+purify$ -- 14
 quote$ -- 0
-skip$ -- 21
+skip$ -- 26
 stack$ -- 0
-substring$ -- 64
+substring$ -- 69
 swap$ -- 3
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 12
+type$ -- 16
 warning$ -- 0
-while$ -- 8
-width$ -- 4
-write$ -- 37
+while$ -- 10
+width$ -- 5
+write$ -- 50
