@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.5.25)  14 APR 2015 12:06
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.5.25)  4 JAN 2017 16:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -478,27 +478,40 @@ iationZoom.pdf
 pdfTeX warning: /usr/texbin/pdflatex (file ./Figures/OutermostRadiusVariationZo
 om.pdf): PDF inclusion: multiple pdfs with page group included in a single page
 
->] [11] [12]
-Overfull \hbox (10.25626pt too wide) detected at line 289
+>] [11] <Figures/NonRadialStrips.png, id=161, 500.87125pt x 749.80125pt>
+File: Figures/NonRadialStrips.png Graphic file (type png)
+
+<use Figures/NonRadialStrips.png>
+Package pdftex.def Info: Figures/NonRadialStrips.png used on input line 248.
+(pdftex.def)             Requested size: 155.24895pt x 232.40166pt.
+ [12 <./Figures/NonRadialStrips.png>]
+Overfull \hbox (58.52681pt too wide) detected at line 269
+\OML/cmm/m/it/10 R[] \OMS/cmsy/m/n/10 ^^Y \OML/cmm/m/it/10 R \OT1/cmr/m/n/10 + 
+^^A\OML/cmm/m/it/10 z [] ^^R \OT1/cmr/m/n/10 + [][] \OMS/cmsy/m/n/10 ^^A []  \O
+ML/cmm/m/it/10 :
+ []
+
+[13]
+Overfull \hbox (10.25626pt too wide) detected at line 319
 [] []
  []
 
-[13] (./LinearizedTrackFitting.bbl [14] [15]
+[14] (./LinearizedTrackFitting.bbl [15] [16]
 Missing character: There is no â in font cmtt10!
 Missing character: There is no € in font cmtt10!
 Missing character: There is no “ in font cmtt10!
-) [16
+) [17
 
 ]
 (./LinearizedTrackFitting.aux) ) 
 Here is how much of TeX's memory you used:
- 2845 strings out of 493117
- 37350 string characters out of 6135433
- 101940 words of memory out of 5000000
- 6244 multiletter control sequences out of 15000+600000
+ 2852 strings out of 493117
+ 37521 string characters out of 6135433
+ 101949 words of memory out of 5000000
+ 6249 multiletter control sequences out of 15000+600000
  13863 words of font info for 53 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 37i,10n,24p,1441b,258s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 37i,10n,24p,1441b,262s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2014/texmf-dist/fonts/type1
 /public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/
 public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/p
@@ -520,10 +533,10 @@ pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb
 usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></us
 r/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr
 /local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on LinearizedTrackFitting.pdf (17 pages, 384358 bytes).
+Output written on LinearizedTrackFitting.pdf (18 pages, 446452 bytes).
 PDF statistics:
- 246 PDF objects out of 1000 (max. 8388607)
- 139 compressed objects within 2 object streams
+ 252 PDF objects out of 1000 (max. 8388607)
+ 142 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

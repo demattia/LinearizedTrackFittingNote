@@ -239,6 +239,36 @@ z \simeq z_0 + R\cdot\cot\theta\, .
 \end{equation}
 The effect of the variation of the radii on the $\cot\theta$ is similar to the effect on $p_T$ in the case of the $\phi$ coordiantes. The effect is maximum in the outermost layer where it is about 11\% and minimum in the innermost layer where it is about 2.5\%. Again, this is a non-negligible effect and should be corrected to achieve a good performance with the linearized track fit. The same approach used for the $\phi$ coordinates can be applied to the $z$ coordinates by building a first order estimate of $\cot\theta$ utilizing only the $z$ coordinates and using it to compute corrected-$z$ coordinates referred to the ideal layers.
 
+\section{The Disks}
+
+The geometry of the CMS tracker is that of concentric cylindrical layers of modules in the so-called barrel and of modules arranged in disks in the so-called endcaps. So far we focused our discussion on the barrel component of the tracker. However, the algorithm described here can be applied with not change to a disk-based geometry, since it will perform an intermediate transformation that changes that geometry to a smooth barrel. The modules used in both barrel and endcaps have strip that are parallel to each other. In the endcaps the modules are arranged so that the strips roughly point back to the z axis. However, since they are parallel to each other, if one strip points to the z axis, all others will not. Since we do not have information on the position of the charge deposit along the strip, each stub on each strip in the disks is assigned the $R$ coordinate of the center of the strip. Figure~\ref{fig:NonRadialStrips} illustrates how the non-radial strips arrangement causes the correct $R$ of the stub to deviate from the assigned $R$ if the particle did not pass through the center of the strip. This deviation is roughly proportional to the distance from the center of the strip. As a consequence, the $\phi$ coordinate is also biased as shown in the figure.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{Figures/NonRadialStrips.png}
+\caption{Variation of the $\phi$ coordinate along the strip length due to the non-radial arrangement of the strips. This sizes shown are for strips in 2S modules.}
+\label{fig:NonRadialStrips}
+\end{center}
+\end{figure}
+
+While this effect is present for every strip in the disks that does not point back to the z axis, the effect is most important for 2S modules where the strips are 5 cm long. In the PS modules, the reduced strip length of 2.5 mm makes the effect negligible.
+
+To correct for this effect we need to have a better estimate of the position of the stub along the strip. Since in the innermost modules are from PS modules that have a much better resolution along $R$ than the 2S modules, we extrapolate the trajectory linearly from the outermost PS module to the 2S modules in the disks. We then correct the $\phi$ coordinate with (to first order):
+\begin{equation}
+\Delta\phi \approx \mbox{pitch} \cdot (\mbox{strip\_index} - \mbox{central\_index}) \cdot \frac{R_{extrapolated} - R}{R^2} \, ,
+\end{equation}
+where
+\begin{itemize}
+\item pitch = 90 $\mu$m;
+\item strip\_index is the index of the strip from 0 to 1015;
+\item central\_index = 507.5. This is the index a strip would have if placed at the center of the module.
+\end{itemize}
+And the $R_{extrapolated}$ is computed to second order approximation as
+\begin{equation}
+R_{extrapolated} \approx R + \Delta z \tan\theta + \left(\frac{1}{2\rho}\right)^2 \cdot \left(-\frac12R^2 \cdot \Delta z \tan \theta - \frac12 R \cdot (\Delta z\tan \theta)^2 - \frac16 (\Delta z \tan \theta)^3\right) \, .
+\end{equation}
+
+
 \subsection{Conclusions}
 
 A method to compute optimal coefficients for a linear estimate of the track parameters using a principal component analysis was presented. It was shown that the effect of the variation of the radii of modules in a layer of the CMS tracker for the phase 2 upgrade has a non-negligible impact on the accuracy of this linear estimate. A simple method to correct this effect in the barrel was also presented. Overall, a single set of PCA coefficients is enough to provide performance close to the offline reconstruction over the full barrel. Splitting the PCA coefficients in few $p_T$ regions can further improve the performance by reducing the effect of non-linearities at low $p_T$.
