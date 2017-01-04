@@ -263,11 +263,11 @@ where
 \item strip\_index is the index of the strip from 0 to 1015;
 \item central\_index = 507.5. This is the index a strip would have if placed at the center of the module.
 \end{itemize}
-And the $R_{extrapolated}$ is computed to second order approximation as
+The $R_{extrapolated}$ is computed to second order approximation as
 \begin{equation}
-R_{extrapolated} \approx R + \Delta z \tan\theta + \left(\frac{1}{2\rho}\right)^2 \cdot \left(-\frac12R^2 \cdot \Delta z \tan \theta - \frac12 R \cdot (\Delta z\tan \theta)^2 - \frac16 (\Delta z \tan \theta)^3\right) \, .
+R_{extrapolated} \approx R + \Delta z \tan\theta + \left(\frac{1}{2\rho}\right)^2 \cdot \left(-\frac12R^2 \cdot \Delta z \tan \theta - \frac12 R \cdot (\Delta z\tan \theta)^2 - \frac16 (\Delta z \tan \theta)^3\right) \, ,
 \end{equation}
-
+where $R$ is the coordinate of the stub in the outermost PS module and $\Delta z = z_{2S} - z_{PS}$, with $z_{PS}$ the coordinate z of the stub of the outermost PS module and $z_{2S}$ the coordinate of the stub in the 2S module we are extrapolating to.
 
 \subsection{Conclusions}
 
