@@ -269,6 +269,34 @@ R_{extrapolated} \approx R + \Delta z \tan\theta + \left(\frac{1}{2\rho}\right)^
 \end{equation}
 where $R$ is the coordinate of the stub in the outermost PS module and $\Delta z = z_{2S} - z_{PS}$, with $z_{PS}$ the coordinate z of the stub of the outermost PS module and $z_{2S}$ the coordinate of the stub in the 2S module we are extrapolating to.
 
+\section{Firmware Implementation}
+
+The algorithm described in this document was developed to be FPGA friendly. Most of the operations involve scalar products among vectors of numbers or simple additions and multiplications. Furthermore, the memory required for the constants (correlation and transformation matrices and mean values) is significantly smaller than previous approaches. This is because the intermediate transformation step produces a smooth geometry where the linear approximation of the second PCA is very accurate over the full detector. It is therefore possible to utilize a single set of coefficients for each combination of layers and disks over the full detector.
+
+The algorithm was implemented and tested in KCU040 and KCU060 Xilinx ultrascale FPGAs. The firmware implementation utilizes DSPs for the scalar products and for the intermediate correction step. The constants are stored in distributed memories (DRAMs), thus freeing the larger block rams (BRAMs) for other possible uses outside this algorithm. Since each DSP is performing one operation in the scalar product chain (such as always multiplying the first element by its corresponding coefficient), it only needs access to a subset of the coefficients. This justifies and encourages the use of DRAMs instead of BRAMs.
+
+In a concrete implementation we divided the detector in 14 unique possible combinations of six between layers and disks. An example of such combination includes the six barrel layers and a different combination would be the five innermost barrel layers and the first disk. For each of those combinations we store a different set of constants since the relative resolutions of stubs in each layer are different and therefore the PCA yields a different set of optimal coefficients. In total, when including also combinations of with only 5 stubs out of those 6, we are able to cover the full detector with 89 unique combinations. We decouple the estimates of transverse plane track parameters ($p_T$, $\phi_0$ and possibly $d_0$) from those of the $R-z$ plane track parameters ($\cot\theta$ and $z_0$) since we found little correlation between the two after the intermediate correction step. This helps in reducing the size of the coefficient matrices. The decoupling means that we only need to use the six (or five) $\phi$ coordinates to estimate the transverse plane parameters and the six (or five) $z$ coordinates to estimate the $R-z$ plane track parameters. Furthermore, to optimize the performance for low $p_T$ where energy loss effects become more important, we utilize two independent set of constants for the transverse plane estimates for low $p_T$ and high $p_T$ tracks. This selection is enabled by the knowledge of the first estimate of the track $p_T$ (accurate to a few percent) before we perform the final estimate of the track parameters.
+
+With this setup, each DSP needs to access at most 178 unique coefficients. In the concrete firmware implementation we implemented memories able to store up to 256 unique coefficients so that extra combinations can be included as needed, to cover specific cases (such as some combinations with only 4 stubs). This memory requirement is very small compared to the typical size of modern FPGA memories and can comfortably be implemented with DRAMs.
+
+The firmware implementation contains coefficients for the full detector. The resource utilization is small enough that in principle up to 17 copies can be included in a single KCU060 FPGA, with the major limiting factor being the number of DSPs (162 or less than 6\% in a KCU060 FPGA) utilized by each instance. This opens up possibilities for parallelization or time multiplexing in a single FPGA. Up to four independent copies of the linearized track fitter were implemented in a KCU040 FPGA and timing requirements were met with a clock of 500 MHz. Figure~\ref{fig:firmwareStructure} shows the structure of the firmware implementation for the transverse plane along with the latency of each step. The structure for the $R-z$ plane component is almost identical except for the lack of the "$p_T$ switch" block. The overall fixed latency is of 39 clock cycles and the design is fully pipelined. At 500 MHz a single instance would be able to process 422 track fits within $1 \mu s$. The performance of this firmware implementation was found to be consistent with that of the full floating point simulation. Figure~\ref{fig:waveformExample} shows an example waveform for a single muon event being processed by the fitter.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{Figures/FirmwareStructure.png}
+\caption{Structure of the firmware implementation for the transverse plane.}
+\label{fig:firmwareStructure}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{Figures/WaveformExample.png}
+\caption{Example waveform.}
+\label{fig:waveformExample}
+\end{center}
+\end{figure}
+
 \subsection{Conclusions}
 
 A method to compute optimal coefficients for a linear estimate of the track parameters using a principal component analysis was presented. It was shown that the effect of the variation of the radii of modules in a layer of the CMS tracker for the phase 2 upgrade has a non-negligible impact on the accuracy of this linear estimate. A simple method to correct this effect in the barrel was also presented. Overall, a single set of PCA coefficients is enough to provide performance close to the offline reconstruction over the full barrel. Splitting the PCA coefficients in few $p_T$ regions can further improve the performance by reducing the effect of non-linearities at low $p_T$.
